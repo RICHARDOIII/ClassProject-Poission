@@ -1,0 +1,218 @@
+
+#include <stdlib.h>
+#include <math.h>
+#include <iostream>
+#include <stdio.h>
+#include <vector>
+void norm (float &error, float *r,int max)
+{
+	for(int i=1;i<max;i++)
+	{
+		for(int j=1; j<max; j++)
+		{
+			int e = r[i*max+j];
+			error+=pow(e,2);
+		}
+	}
+}
+
+double f(int i,int j,int size)
+{
+	i=i/size;j=j/size;
+	int value = -5.0*exp(i)*exp(-2.0*j);
+	
+	return value;
+}
+double phi(int i, int j,int size)
+{
+	i=i/size;j=j/size;
+	int value = exp(i)*exp(-2.0*j);
+	return value;
+}
+void init( float *x,float *y,int  size)
+{
+	for (int i=0;i<size;i++)
+	{
+		for(int j=0;i<size;j++)
+			{
+				x[i*size+j]=f( i,j,size );
+			}
+	}
+	for (int i=1;i<size-1;i++)
+	{
+		for(int j=0;i<size;j++)
+			{
+				x[i*size+j]=f( i,j,size );
+			}
+	}
+
+}
+
+void gs(float *F,float *p,int l ,int max) 
+{	
+	int  dis=pow(2,l);
+	for(int i=dis;i<max-dis;i=i+dis)
+                	{
+                		for (int j=0;j<max;j=j+dis)
+                		{
+					p[i*max+j] = .25*(p[(i+dis)*max+j]
+							+p[(i-dis)*max+j]
+							+p[i*max+(j+dis)]
+							+p[i*max+(j-dis)]
+							+(1/pow(dis,2))*F[i*max +j]);
+                		}
+
+			}
+}
+
+void resid(float *r,float *F,float *p,int l ,int max) 
+{	int dis = pow(2,l);	
+	for(int i=dis;i<max-dis;i=i+dis)
+			{
+				for (int j=0;j<max;j=j+dis)
+				{
+				int	resid = 	(p[(i+dis)*max+j]
+							+p[(i-dis)*max+j]
+							+p[i*max+(j+dis)]
+							+p[i*max+(j-dis)]
+							+(1/pow(dis,2))*F[i*max +j]
+							-(4*(p[i*max+j])));
+				r[i*max+j]+=resid;
+				}
+
+			}
+}
+void Rest (float *r,float *t,int l, int max)
+{	
+	int dis = pow(2,l+1);
+	for(int i=dis;i<max-dis;i=i+dis)
+                	{
+                		for (int j=0;j<max;j=j+dis)
+                		{
+				
+ 				t[i*max+j] = ((4*(r[i*max+j]))+
+					
+					+
+					(2*(r[(i+1)*max+j]+r[(i-1)*max+j]
+					+r[i*max+(j+1)]+r[i*max+(j-1)]))
+					
+					+
+					(r[(i+1)*max+(j+1)]+r[(i-1)*max+(j-1)]
+					+r[(i-1)*max+(j+1)]+r[(i+1)*max+(j-1)])/16);             		
+				
+				}
+
+			}
+}
+
+void prolong(float  *e,float *r,int l, int max)
+{	
+	int dis = pow(2,l+1);
+	for(int i=dis;i<max-dis;i=i+dis)
+                	{
+                		for (int j=0;j<max;j=j+dis)
+                		{
+				
+ 				int R = r[i*max+j];
+				int q = .5*R;
+				e[(i+1)*max+j] =q; 
+				e[(i-1)*max+j] =q;
+				e[i*max+(j+1)] =q;
+				e[i*max+(j-1)] =q;
+				int t= .25R;
+				e[(i+1)*max+(j+1)]=t;
+				e[(i-1)*max+(j-1)]=t;
+				e[(i-1)*max+(j+1)]=t;
+				e[(i+1)*max+(j-1)]=t;           		
+				
+				}
+
+			}
+}
+void MULTIGRID_CYCLE(int l,int N,float *F, float *P,float *R,float &e)
+{
+	if(l==0)
+	{==0;}
+	int max=1+pow(2,N);
+	gs(F,P,l,N);
+	resid(R, F, P, l, max);
+	float *temp=(float *)malloc((pow(2,max-l-1)*pow(2,max-l-1)*sizeof(int));
+	Rest(R,temp,l,N);
+	if (level<N-1)			
+	{MULTIGRID_CYCLE(l+1, N, F, P, R,e);}
+	prolong(R,temp,l,max);
+	gs(F,P,l,N);
+	resid(R,F,P,l,max);
+	if(l==0)
+	{norm(e,R[0],max);}	
+}
+int main()
+{
+int n = 129; //Undetermined amount
+float *F=(float *)malloc( n* n * sizeof(int));
+float *P=(float *)malloc( n* n * sizeof(int));
+float R*;
+iint ngs=0;
+
+for (int i=0;i<n;i++)
+{
+	if (n-(pow(2,ngs)+1)==0)
+	{
+		break;
+	}
+	ngs=ngs+1;
+}
+		R=(float *)malloc(N*N * sizeof(int));
+	int level=0;
+	init(F,P,n-1);	
+	float error=0.0;
+	while( error>.01)
+	{
+	MULTIGRID_CYCLE(level,numberofgrids,F,P,R,error);	
+	}
+	printf("%f",error);
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			
